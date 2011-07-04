@@ -1,0 +1,98 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="socket.io.js"></script>
+<script>
+var url = 'tabulous.org';
+
+
+function sendTabs() {
+    chrome.windows.getCurrent(function (win){
+	 chrome.tabs.getAllInWindow(win.id, function(tabs){
+		var tabList = [], 
+            titleList = [],
+            i, thisURL;
+		for (i = 0; i < Math.min(tabs.length,50); i++) { //sync no more than 50 tabs
+			thisURL = tabs[i].url;
+            if (thisURL.search('http')==0 || thisURL.search('https')==0 || thisURL.search('ftp')==0 ) {
+            tabList.push(tabs[i].url);
+			titleList.push(tabs[i].title.slice(0,27)); //limit title lengths to 27 chars
+            }
+		}
+		socket.send({
+		m:'tabs', 
+		tabs:tabList,
+		titles:titleList,
+		'authID': localStorage['tabulous.authID'] //todo abstract this out
+		});
+	});}
+	);
+}
+
+function authorize(id) {
+    localStorage['tabulous.authID'] = id;
+    if (!socket.connected) {
+    attemptConnect();
+    }
+    else {
+        socket.send({
+            'm':'auth',
+            'authID':id
+        });
+    } //postcondition: user is authorized on the server side and ready to send tabs
+}
+
+chrome.extension.onRequest.addListener( //on new login. receiving fresh authID
+	function(request, sender, sendResponse) {
+	if (request.target=='bg' && request.authID)
+		{
+			authorize(request.authID);
+		}
+	}
+);
+  
+function openTabs(tabs) {
+	if (tabs) {chrome.windows.create({url:tabs});}
+}
+
+function receiveMsg(msg) {
+	if (typeof(msg) == typeof({}))
+	{
+		if (msg.m=='auth?') {
+			authID = localStorage.getItem('tabulous.authID');
+			if (authID) {
+				socket.send({'m':'auth','authID':authID});
+			}
+			else {
+			//TODO ask to log in?
+			}
+			
+			
+		} else if (msg.m == 'authFail') {
+			localStorage.removeItem('tabulous.authID');
+			//prompt to log in again, say that auth failed
+		} else if (msg.m=='success') {
+			chrome.extension.sendRequest({target:'popup', msg:'success'});
+		} else if (msg.m=='tabs') { 
+			openTabs(msg.tabs);
+		}
+	}
+	//ow dunno what the message is
+}
+
+function attemptConnect() {
+    //create a new socket object each time so that we don't have the old one lying around
+    socket = new io.Socket(url, {port: 443, secure: true, rememberTransport: false}); //TODO switch to 443
+    socket.connect();
+    socket.on('message',receiveMsg);
+    socket.on('disconnect',attemptConnect); 
+}
+attemptConnect();
+
+</script>
+
+</head>
+<body>
+</body>
+
+</html>

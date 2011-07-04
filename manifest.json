@@ -1,0 +1,26 @@
+{
+	"name": "Tabulous",
+	"version": "1.1",
+	"description": "Send a window of tabs between two or more computers. Like Chrome to Phone, but for desktop computers.",
+	"background_page": "background.html",
+	"browser_action":	{
+		"default_title": "Click to sync these tabs.",
+		"default_icon": "icon.png",
+		"popup": "popup.html"
+		
+	},
+	"content_scripts": [
+		{
+			"matches": ["https://tabulous.org/login*"],
+			"js": ["authScript.js"]
+		}
+	],
+	"icons": {
+      "16": "icon.png",
+	  "48": "icon.png",
+      "128": "icon_128.png"
+   },
+   "options_page": "options.html",
+	"permissions": ["tabs", "http://*/*", "https://*/*"]
+
+}

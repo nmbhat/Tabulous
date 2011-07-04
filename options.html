@@ -1,0 +1,15 @@
+<doctype html>
+<html>
+<script>
+var url = 'https://tabulous.org';
+var logout = function() {
+	localStorage.removeItem('tabulous.authID');
+	document.getElementById('msg').innerHTML = "This computer has been logged out of Tabulous.";
+};
+
+</script>
+<body>
+	<a id="link" href='#' onclick="logout();">Log out of Tabulous.</a>
+<div id='msg'></div>
+</body>
+</html>

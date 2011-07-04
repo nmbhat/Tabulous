@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+<title>Tabulous popup</title>
+<style>
+body {
+	width:78px;
+	height: 20px;
+}
+</style>
+<script>
+authID = localStorage.getItem('tabulous.authID');
+
+var url = 'https://tabulous.org';
+
+chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+	if (request.target=='popup') {
+		if (request.msg=='success') {
+            document.getElementById('NotifyDiv').innerHTML = 'Synced.';}
+            
+	}
+});
+
+var syncFn = function() {
+	document.getElementById('NotifyDiv').innerHTML = 'Syncing...';
+	chrome.extension.getBackgroundPage().sendTabs();
+};
+
+var last5 = function() {
+	chrome.tabs.create({'url': url+'/tabs?u='+authID});
+};
+
+var login = function() {
+	chrome.tabs.create({'url': url+'/login'});
+};
+
+</script>
+</head> 
+
+<body>
+<div id="main">
+	<button type="button" onclick="syncFn();">Sync tabs</button>
+	<button type="button" onclick="last5();">View last 5</button>
+	<div id="NotifyDiv">
+	</div>
+</div>
+</body>
+<script>
+if (localStorage.getItem('tabulous.authID') == null) {
+	document.getElementById('main').innerHTML = '<button type="button" onclick="login();">Log in</button>';
+}
+if (!chrome.extension.getBackgroundPage().socket.connected) {
+    var b = document.getElementsByTagName('body')[0]
+    b.style.width="100px";
+    b.style.height="20px";
+    document.getElementById('main').innerHTML = "Sorry, can't connect to the server right now. Try again in a minute.";
+}
+</script>
+</html> 
