@@ -1,6 +1,6 @@
 {
 	"name": "Tabulous",
-	"version": "1.1",
+	"version": "1.2",
 	"description": "Send a window of tabs between two or more computers. Like Chrome to Phone, but for desktop computers.",
 	"background_page": "background.html",
 	"browser_action":	{
